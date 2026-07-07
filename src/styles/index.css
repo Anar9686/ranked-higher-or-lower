@@ -1,0 +1,6 @@
+/* Theme */
+@import './theme.css';
+
+/* Tailwind */
+@import "tailwindcss";
+@import 'tw-animate-css';
