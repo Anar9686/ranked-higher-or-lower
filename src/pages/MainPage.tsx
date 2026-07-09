@@ -1,53 +1,159 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import GamePane from "../components/GamePane";
 import VsDivider from "../components/VsDivider";
-import type { RunnerData } from "../types/RunnerTypes";
+import { animate, motion, useMotionValue } from "motion/react";
+import { getLeaderboard } from "../api/api";
+import type { PaneDetails, RunnerData } from "../types";
+import { getPaneDetails } from "../helpers";
+import { CONSTANTS } from "../constants";
 
-function MainPage() {
-  const [leftRevealed, setLeftRevealed] = useState(true);
-  const [rightRevealed, setRightRevealed] = useState(false);
+function MainPage({
+  onGameOver,
+}: {
+  onGameOver: (finalScore: number) => void;
+}) {
+  const [revealed, setRevealed] = useState(false);
+  const [step, setStep] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [gameList, setGameList] = useState<RunnerData[] | null>(null);
+  const [cardDetails, setCardDetails] = useState<(PaneDetails | null)[]>([
+    null,
+    null,
+    null,
+  ]);
 
-  const handleLeftGuess = (direction: "higher" | "lower") => {
-    setLeftRevealed(true);
-    // Game logic goes here — compare values and update feedback
-  };
+  const trackX = useMotionValue(0);
+  const detailCache = useRef<Record<string, PaneDetails>>({});
 
-  const handleRightGuess = (direction: "higher" | "lower") => {
-    setRightRevealed(true);
-    // Game logic goes here — compare values and update feedback
-  };
+  useEffect(() => {
+    getLeaderboard().then((data) => {
+      const first100 = data.users.slice(0, 100);
+      // Biased shuffle to make the top of the top runners are more likely to appear first, but still randomize the order a bit
+      function biasedShuffle<RunnerData>(array: RunnerData[]) {
+        return [...array]
+          .map((item, index) => ({
+            item,
+            score: index + Math.random() * (30 + index * 0.5),
+          }))
+          .sort((a, b) => a.score - b.score)
+          .map(({ item }) => item);
+      }
+      setGameList(biasedShuffle(first100));
+    });
+  }, []);
 
-  const LEFT: RunnerData = {
-    name: "edcr",
-    ranking: "1234",
-    elo: "1500",
-    uuid: "edcr",
-  };
+  const list = gameList ?? [];
 
-  const RIGHT: RunnerData = {
-    name: "Infume",
-    ranking: "4",
-    elo: "1500",
-    uuid: "Infume",
+  useEffect(() => {
+    if (!list.length) return;
+
+    // Loop around if you reach the end
+    const indices = [step, step + 1, step + 2, step + 3].map(
+      (index) => index % list.length,
+    );
+
+    setCardDetails((current) =>
+      indices.slice(0, 3).map((index, offset) => {
+        const uuid = list[index]["uuid"];
+        return detailCache.current[uuid] ?? current[offset] ?? null;
+      }),
+    );
+
+    const missingIndices = indices.filter((index) => {
+      const uuid = list[index]["uuid"];
+      return !detailCache.current[uuid];
+    });
+
+    if (!missingIndices.length) return;
+
+    let cancelled = false;
+
+    Promise.all(
+      missingIndices.map((index) => {
+        const uuid = list[index]["uuid"];
+        return getPaneDetails(uuid).then((paneDetails) => {
+          detailCache.current[uuid] = paneDetails;
+          return { index, paneDetails };
+        });
+      }),
+    ).then(() => {
+      if (cancelled) return;
+
+      setCardDetails((current) =>
+        [step, step + 1, step + 2].map((index, offset) => {
+          const uuid = list[index % list.length]["uuid"];
+          return detailCache.current[uuid] ?? current[offset] ?? null;
+        }),
+      );
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [list, step]);
+
+  const left = cardDetails[0];
+  const right = cardDetails[1];
+  const incoming = cardDetails[2];
+
+  const handleGuess = (
+    _direction: typeof CONSTANTS.HIGHER | typeof CONSTANTS.LOWER,
+  ) => {
+    if (revealed || busy) return;
+    setRevealed(true);
+
+    if (left && right) {
+      if (
+        ((left.details?.eloRank ?? 0) < (right.details?.eloRank ?? 0) &&
+          _direction === CONSTANTS.LOWER) ||
+        ((left.details?.eloRank ?? 0) > (right.details?.eloRank ?? 0) &&
+          _direction === CONSTANTS.HIGHER)
+      ) {
+        // Pause so the user can read the revealed value, then slide
+        setTimeout(() => {
+          setBusy(true);
+          animate(trackX, -(window.innerWidth / 2), {
+            duration: 0.6,
+            ease: [0.76, 0, 0.24, 1],
+          }).then(() => {
+            trackX.set(0);
+            setStep((s) => s + 1);
+            setRevealed(false);
+            setBusy(false);
+          });
+        }, 1300);
+      } else {
+        onGameOver(step);
+      }
+    }
   };
 
   return (
     <>
-      <GamePane
-        side="left"
-        data={LEFT}
-        showValue={leftRevealed}
-        onGuess={handleLeftGuess}
-      />
+      {list[0] && (
+        <motion.div
+          className="flex h-full absolute inset-y-0 left-0"
+          style={{ width: "150vw", x: trackX }}
+        >
+          <div className="h-full shrink-0" style={{ width: "50vw" }}>
+            <GamePane paneDetails={left} showValue={true} />
+          </div>
 
-      <VsDivider />
+          <div className="h-full shrink-0" style={{ width: "50vw" }}>
+            <GamePane
+              paneDetails={right}
+              showValue={revealed}
+              onGuess={busy ? undefined : handleGuess}
+            />
+          </div>
 
-      <GamePane
-        side="right"
-        data={RIGHT}
-        showValue={rightRevealed}
-        onGuess={handleRightGuess}
-      />
+          <div className="h-full shrink-0" style={{ width: "50vw" }}>
+            <GamePane paneDetails={incoming} showValue={false} />
+          </div>
+        </motion.div>
+      )}
+
+      <VsDivider score={step} />
     </>
   );
 }

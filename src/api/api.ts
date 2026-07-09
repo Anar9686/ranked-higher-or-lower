@@ -1,6 +1,6 @@
-import type { RunnerDetails } from "../types/RunnerTypes";
+import type { Leaderboard, RunnerDetails } from "../types";
 
-export async function getRunnerAvatar(uuid: string) {
+export async function getRunnerAvatarFancy(uuid: string) {
   const types = [
     "default",
     "walking",
@@ -14,7 +14,7 @@ export async function getRunnerAvatar(uuid: string) {
   );
 
   if (!response.ok) {
-    return await getRunnerFallBack(uuid);
+    throw new Error("Failed to fetch runner model");
   }
 
   const blob = await response.blob();
@@ -22,7 +22,7 @@ export async function getRunnerAvatar(uuid: string) {
   return url;
 }
 
-export async function getRunnerFallBack(uuid: string) {
+export async function getRunnerAvatar(uuid: string) {
   const response = await fetch(
     `https://render.crafty.gg/3d/full/${uuid}?height=960&width=540`,
   );
@@ -42,7 +42,8 @@ export async function getLeaderboard() {
   if (!response.ok) {
     throw new Error("Failed to fetch leaderboard");
   }
-  const data = await response.json();
+  const json = await response.json();
+  const data: Leaderboard = json["data"];
   return data;
 }
 
