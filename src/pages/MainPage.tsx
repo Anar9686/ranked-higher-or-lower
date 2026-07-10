@@ -7,8 +7,6 @@ import type { PaneDetails, RunnerData } from "../types";
 import { getPaneDetails } from "../helpers";
 import { CONSTANTS } from "../constants";
 
-export let playedList: PaneDetails[] = [];
-
 function MainPage({
   onGameOver,
 }: {
@@ -34,13 +32,12 @@ function MainPage({
         return [...array]
           .map((item, index) => ({
             item,
-            score: index + Math.random() * (40 + index * 0.5),
+            score: index + Math.random() * 35,
           }))
           .sort((a, b) => a.score - b.score)
           .map(({ item }) => item);
       }
       const shuffled = biasedShuffle(first100);
-      playedList = [];
       setGameList(shuffled);
     });
   }, []);
@@ -106,7 +103,6 @@ function MainPage({
     setRevealed(true);
 
     if (left && right) {
-      playedList.push(left);
       const leftRank = left.details?.eloRank ?? 0;
       const rightRank = right.details?.eloRank ?? 0;
 
@@ -126,7 +122,7 @@ function MainPage({
           });
         }, 1300);
       } else {
-        playedList.push(right);
+        playedList = list.slice(0, step + 2);
         onGameOver(step);
       }
     }
@@ -163,3 +159,9 @@ function MainPage({
 }
 
 export default MainPage;
+
+export let playedList: RunnerData[] = [];
+
+export function emptyPlayedList() {
+  playedList = [];
+}

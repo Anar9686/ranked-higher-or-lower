@@ -1,7 +1,7 @@
 import { getRunnerAvatar, getRunnerDetails } from "./api/api";
 import { backgrounds } from "./assets/backgrounds/index";
 import type { RunnerDetails } from "./types";
-import { playedList } from "./pages/MainPage";
+import { emptyPlayedList, playedList } from "./pages/MainPage";
 
 export function runnerPB(details: RunnerDetails): string | undefined {
   return (
@@ -34,11 +34,12 @@ export async function getPaneDetails(uuid: string) {
 
 export function generateShareString(score: number) {
   let shareString = `🏆 I scored ${score} on Higher or Lower! 🎮\n`;
-  playedList.forEach((pane, index) => {
+  playedList.forEach((runner, index) => {
     if (index == 0) shareString += "👉 ";
     if (index == score + 1) shareString += "💀 ";
-    shareString += `#${pane.details?.eloRank} ${pane.details?.nickname}\n`;
+    shareString += `#${runner.eloRank} ${runner.nickname}\n`;
   });
   shareString += `Play on: ${window.location.href}`;
+  emptyPlayedList();
   return shareString;
 }
