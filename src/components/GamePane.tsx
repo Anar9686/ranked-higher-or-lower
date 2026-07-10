@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 import GuessLower from "./GuessLower";
@@ -15,14 +15,32 @@ function GamePane({
 }: {
   paneDetails: PaneDetails | null;
   showValue: boolean;
-  onGuess?: (direction: typeof CONSTANTS.HIGHER | typeof CONSTANTS.LOWER) => void;
+  onGuess?: (
+    direction: typeof CONSTANTS.HIGHER | typeof CONSTANTS.LOWER,
+  ) => void;
 }) {
   const [hovered, setHovered] = useState(false);
-  const canInteract = !!onGuess && !showValue;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canInteract = onGuess && !showValue;
   const activeHover = hovered && canInteract;
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const checkInitialHover = (e: MouseEvent) => {
+      if (container.contains(e.target as Node)) {
+        setHovered(true);
+      }
+    };
+
+    document.addEventListener("mousemove", checkInitialHover);
+    return () => document.removeEventListener("mousemove", checkInitialHover);
+  }, []);
 
   return (
     <div
+      ref={containerRef}
       className="relative w-full h-full overflow-hidden"
       onMouseEnter={() => canInteract && setHovered(true)}
       onMouseLeave={() => setHovered(false)}

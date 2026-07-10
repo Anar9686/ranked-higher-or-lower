@@ -7,6 +7,8 @@ import type { PaneDetails, RunnerData } from "../types";
 import { getPaneDetails } from "../helpers";
 import { CONSTANTS } from "../constants";
 
+export let playedList: PaneDetails[] = [];
+
 function MainPage({
   onGameOver,
 }: {
@@ -14,9 +16,8 @@ function MainPage({
 }) {
   const [revealed, setRevealed] = useState(false);
   const [step, setStep] = useState(0);
-  const [busy, setBusy] = useState(false);
   const [gameList, setGameList] = useState<RunnerData[] | null>(null);
-  const [cardDetails, setCardDetails] = useState<(PaneDetails | null)[]>([
+  const [paneDetails, setPaneDetails] = useState<(PaneDetails | null)[]>([
     null,
     null,
     null,
@@ -52,7 +53,7 @@ function MainPage({
       (index) => index % list.length,
     );
 
-    setCardDetails((current) =>
+    setPaneDetails((current) =>
       indices.slice(0, 3).map((index, offset) => {
         const uuid = list[index]["uuid"];
         return detailCache.current[uuid] ?? current[offset] ?? null;
@@ -79,7 +80,7 @@ function MainPage({
     ).then(() => {
       if (cancelled) return;
 
-      setCardDetails((current) =>
+      setPaneDetails((current) =>
         [step, step + 1, step + 2].map((index, offset) => {
           const uuid = list[index % list.length]["uuid"];
           return detailCache.current[uuid] ?? current[offset] ?? null;
@@ -92,26 +93,27 @@ function MainPage({
     };
   }, [list, step]);
 
-  const left = cardDetails[0];
-  const right = cardDetails[1];
-  const incoming = cardDetails[2];
+  const left = paneDetails[0];
+  const right = paneDetails[1];
+  const incoming = paneDetails[2];
 
   const handleGuess = (
     _direction: typeof CONSTANTS.HIGHER | typeof CONSTANTS.LOWER,
   ) => {
-    if (revealed || busy) return;
+    if (revealed) return;
     setRevealed(true);
 
     if (left && right) {
-      if (
-        ((left.details?.eloRank ?? 0) < (right.details?.eloRank ?? 0) &&
-          _direction === CONSTANTS.LOWER) ||
-        ((left.details?.eloRank ?? 0) > (right.details?.eloRank ?? 0) &&
-          _direction === CONSTANTS.HIGHER)
-      ) {
-        // Pause so the user can read the revealed value, then slide
+      playedList.push(left);
+      const leftRank = left.details?.eloRank ?? 0;
+      const rightRank = right.details?.eloRank ?? 0;
+
+      const correct =
+        (leftRank < rightRank && _direction === CONSTANTS.LOWER) ||
+        (leftRank > rightRank && _direction === CONSTANTS.HIGHER);
+      // Pause so the user can read the revealed value
+      if (correct) {
         setTimeout(() => {
-          setBusy(true);
           animate(trackX, -(window.innerWidth / 2), {
             duration: 0.6,
             ease: [0.76, 0, 0.24, 1],
@@ -119,10 +121,10 @@ function MainPage({
             trackX.set(0);
             setStep((s) => s + 1);
             setRevealed(false);
-            setBusy(false);
           });
         }, 1300);
       } else {
+        playedList.push(right);
         onGameOver(step);
       }
     }
@@ -143,7 +145,7 @@ function MainPage({
             <GamePane
               paneDetails={right}
               showValue={revealed}
-              onGuess={busy ? undefined : handleGuess}
+              onGuess={handleGuess}
             />
           </div>
 

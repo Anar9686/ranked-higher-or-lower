@@ -1,18 +1,20 @@
 import { useState } from "react";
 import MainPage from "./pages/MainPage";
-import BuyMeCoffee from "./components/BuyMeCoffee";
 import Header from "./components/Header";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import LandingDialog from "./components/LandingDialog";
 import { ContactButton, ContactDialog } from "./components/ContactMe";
 import { CONSTANTS } from "./constants";
 import GameOverDialog from "./components/GameOverDialog";
+import { SupportButton, SupportDialog } from "./components/SupportMe";
 
 export default function App() {
   const [gameId, setGameId] = useState(0);
   const [finalScore, setFinalScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  const [showLoss, setShowLoss] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [showSupport, setShowSupport] = useState(false);
   const [showLanding, setShowLanding] = useState(() => {
     const seen = sessionStorage.getItem(CONSTANTS.LANDING_SEEN);
     return !seen;
@@ -33,19 +35,21 @@ export default function App() {
   };
 
   return (
-    <div
-      key={gameId}
-      className="h-screen w-screen overflow-hidden flex flex-col bg-[#080808]"
-    >
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#080808]">
       <Header highScore={highScore} />
 
       <main className="flex-1 flex relative overflow-hidden">
         <MainPage
+          key={gameId}
           onGameOver={(finalScore) => {
-            setFinalScore(finalScore);
-            setGameOver(true);
-            updateHighScore(finalScore);
-            setGameId((prev) => prev + 1);
+            setShowLoss(true);
+            setTimeout(() => {
+              setShowLoss(false);
+              setFinalScore(finalScore);
+              setGameOver(true);
+              updateHighScore(finalScore);
+              setGameId((prev) => prev + 1);
+            }, 1300);
           }}
         />
       </main>
@@ -76,8 +80,29 @@ export default function App() {
         {showContact && <ContactDialog onClose={() => setShowContact(false)} />}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {showSupport && <SupportDialog onClose={() => setShowSupport(false)} />}
+      </AnimatePresence>
+
       <ContactButton onClick={() => setShowContact(true)} />
-      <BuyMeCoffee />
+      <SupportButton onClick={() => setShowSupport(true)} />
+      {/* <BuyMeCoffee /> */}
+
+      <AnimatePresence>
+        {showLoss && (
+          <motion.div
+            className="w-full h-full absolute inset-0"
+            animate={{
+              backgroundColor: ["rgba(255, 0, 0, 0.3)", "rgba(255, 0, 0, 0)"],
+              x: [0, -10, 10, -10, 10, 0],
+            }}
+            transition={{
+              duration: 0.7,
+              ease: "easeOut",
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

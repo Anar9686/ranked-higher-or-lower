@@ -19,17 +19,17 @@ export function ContactDialog({ onClose }: { onClose: () => void }) {
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     emailjs
       .send(
         import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        import.meta.env.VITE_EMAILJS_CONTACT_TEMPLATE_ID,
         {
           email,
           reason,
           message,
-        }
+        },
       )
       .then(
         (response) => {
@@ -137,7 +137,7 @@ export function ContactButton({ onClick }: { onClick: () => void }) {
       style={{ fontFamily: "'Noto Sans', sans-serif" }}
     >
       <Mail size={14} />
-      <span className="hidden sm:inline">Contact</span>
+      <span className="hidden sm:inline">Contact Me</span>
     </motion.button>
   );
 }

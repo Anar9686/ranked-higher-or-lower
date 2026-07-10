@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Share2 } from "lucide-react";
 import DialogShell from "./ui/DialogShell";
 import { motion } from "motion/react";
+import { generateShareString } from "../helpers";
 
 export function GameOverDialog({
   score,
@@ -9,19 +11,26 @@ export function GameOverDialog({
   score: number;
   onRestart: () => void;
 }) {
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
   const messages = [
     "Better luck next time.",
-    "So close — try again!",
+    "Try again!",
     "That one was tricky.",
   ];
   const msg = messages[score % messages.length];
 
   const handleShare = () => {
-    const text = `I scored ${score} on Higher or Lower! Can you beat me?`;
+    const text = generateShareString(score);
     if (navigator.share) {
-      navigator.share({ title: "Higher or Lower", text }).catch(() => {});
+      navigator
+        .share({ title: "Higher or Lower", text })
+        .then(() => setShareMessage("Shared!"))
+        .catch(() => setShareMessage("Failed. Try again."));
     } else {
-      navigator.clipboard.writeText(text);
+      navigator.clipboard
+        .writeText(text)
+        .then(() => setShareMessage("Copied to clipboard!"))
+        .catch(() => setShareMessage("Copy failed. Try again."));
     }
   };
 
@@ -80,6 +89,9 @@ export function GameOverDialog({
             <Share2 size={14} />
             Share Score
           </button>
+          {shareMessage ? (
+            <p className="text-xs mt-2 text-white/70">{shareMessage}</p>
+          ) : null}
           <button
             onClick={onRestart}
             className="w-full bg-[#facc15] hover:bg-yellow-300 active:scale-[0.98] text-[#080808] font-black text-base uppercase tracking-widest py-3.5 rounded-xl transition-all duration-150 shadow-lg shadow-[#facc15]/20"

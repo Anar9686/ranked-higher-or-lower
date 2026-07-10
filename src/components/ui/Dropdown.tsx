@@ -32,7 +32,7 @@ function Dropdown({
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center justify-between bg-white/6 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none transition-all duration-150 hover:bg-white/[0.09] focus:border-[#facc15]/50"
         style={{
-          fontFamily: "'Outfit', sans-serif",
+          fontFamily: "'Noto Sans', sans-serif",
           color: value ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.25)",
         }}
       >
@@ -66,7 +66,7 @@ function Dropdown({
                     ? "text-[#facc15] bg-white/6"
                     : "text-white/60 hover:text-white hover:bg-white/5"
                 }`}
-                style={{ fontFamily: "'Outfit', sans-serif" }}
+                style={{ fontFamily: "'Noto Sans', sans-serif" }}
               >
                 {opt}
               </li>
