@@ -6,7 +6,8 @@ import LandingDialog from "./components/LandingDialog";
 import { ContactButton, ContactDialog } from "./components/ContactMe";
 import { CONSTANTS } from "./constants";
 import GameOverDialog from "./components/GameOverDialog";
-import { SupportButton, SupportDialog } from "./components/SupportMe";
+// import { SupportButton, SupportDialog } from "./components/SupportMe";
+import BuyMeCoffee from "./components/BuyMeCoffee";
 
 export default function App() {
   const [gameId, setGameId] = useState(0);
@@ -14,7 +15,7 @@ export default function App() {
   const [gameOver, setGameOver] = useState(false);
   const [showLoss, setShowLoss] = useState(false);
   const [showContact, setShowContact] = useState(false);
-  const [showSupport, setShowSupport] = useState(false);
+  // const [showSupport, setShowSupport] = useState(false);
   const [showLanding, setShowLanding] = useState(() => {
     const seen = sessionStorage.getItem(CONSTANTS.LANDING_SEEN);
     return !seen;
@@ -80,13 +81,13 @@ export default function App() {
         {showContact && <ContactDialog onClose={() => setShowContact(false)} />}
       </AnimatePresence>
 
-      <AnimatePresence>
+      {/* <AnimatePresence>
         {showSupport && <SupportDialog onClose={() => setShowSupport(false)} />}
-      </AnimatePresence>
+      </AnimatePresence> */}
 
+      {/* <SupportButton onClick={() => setShowSupport(true)} /> */}
       <ContactButton onClick={() => setShowContact(true)} />
-      <SupportButton onClick={() => setShowSupport(true)} />
-      {/* <BuyMeCoffee /> */}
+      <BuyMeCoffee />
 
       <AnimatePresence>
         {showLoss && (
