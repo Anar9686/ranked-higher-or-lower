@@ -110,8 +110,8 @@ function MainPage({
       const rightRank = right.details?.eloRank ?? 0;
 
       const correct =
-        (leftRank < rightRank && _direction === CONSTANTS.LOWER) ||
-        (leftRank > rightRank && _direction === CONSTANTS.HIGHER);
+        (leftRank <= rightRank && _direction === CONSTANTS.LOWER) ||
+        (leftRank >= rightRank && _direction === CONSTANTS.HIGHER);
       // Pause so the user can read the revealed value
       if (correct) {
         setTimeout(() => {
