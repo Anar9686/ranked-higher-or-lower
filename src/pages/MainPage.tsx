@@ -34,12 +34,13 @@ function MainPage({
         return [...array]
           .map((item, index) => ({
             item,
-            score: index + Math.random() * (30 + index * 0.5),
+            score: index + Math.random() * (40 + index * 0.5),
           }))
           .sort((a, b) => a.score - b.score)
           .map(({ item }) => item);
       }
       const shuffled = biasedShuffle(first100);
+      playedList = [];
       setGameList(shuffled);
     });
   }, []);
