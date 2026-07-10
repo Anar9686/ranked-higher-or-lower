@@ -92,14 +92,14 @@ function GamePane({
           <span className="font-bold text-white text-[16px]">
             {paneDetails?.details
               ? runnerPB(paneDetails.details)
-              : "Loading..."}
+              : ""}
           </span>
           <br />
           Total Playtime:{" "}
           <span className="font-bold text-white text-[16px]">
             {paneDetails?.details
               ? runnerPlaytime(paneDetails.details)
-              : "Loading..."}
+              : ""}
           </span>
         </motion.span>
       </div>
@@ -135,12 +135,12 @@ function GamePane({
               #
               {paneDetails?.details
                 ? paneDetails.details["eloRank"]
-                : "Loading..."}
+                : ""}
               <br />
               <span className="text-white">
                 {paneDetails?.details
                   ? paneDetails.details["eloRate"]
-                  : "Loading..."}
+                  : ""}
               </span>
             </motion.div>
           ) : (
