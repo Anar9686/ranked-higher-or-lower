@@ -40,7 +40,6 @@ function MainPage({
           .map(({ item }) => item);
       }
       const shuffled = biasedShuffle(first100);
-      console.log(shuffled)
       setGameList(shuffled);
     });
   }, []);
