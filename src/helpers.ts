@@ -27,7 +27,7 @@ export function runnerPlaytime(details: RunnerDetails): string | undefined {
 
 export async function getPaneDetails(uuid: string) {
   const details = await getRunnerDetails(uuid);
-  const avatar = await getRunnerAvatar(uuid);
+  const avatar = getRunnerAvatar(uuid);
   const background = backgrounds[uuid.charCodeAt(0) % backgrounds.length];
   return { details, avatar, background };
 }

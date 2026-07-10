@@ -39,7 +39,9 @@ function MainPage({
           .sort((a, b) => a.score - b.score)
           .map(({ item }) => item);
       }
-      setGameList(biasedShuffle(first100));
+      const shuffled = biasedShuffle(first100);
+      console.log(shuffled)
+      setGameList(shuffled);
     });
   }, []);
 
