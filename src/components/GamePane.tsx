@@ -6,6 +6,7 @@ import GuessHigher from "./GuessHigher";
 import type { PaneDetails } from "../types";
 import { runnerPB, runnerPlaytime } from "../helpers";
 
+import benguSkin from "../assets/bengu_skin.webp";
 import { CONSTANTS } from "../constants";
 
 function GamePane({
@@ -55,7 +56,7 @@ function GamePane({
       />
 
       <motion.img
-        src={paneDetails?.avatar}
+        src={paneDetails?.avatar ?? benguSkin}
         alt=""
         className="absolute left-1/2 top-1/2 w-1/2 h-4/5 -translate-x-1/2 -translate-y-1/2 object-contain"
         animate={{ scale: activeHover ? 1.3 : 1 }}

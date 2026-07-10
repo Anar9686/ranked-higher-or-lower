@@ -1,27 +1,6 @@
-export const backgrounds = [
-    "src/assets/backgrounds/0.jpg",
-    "src/assets/backgrounds/1.jpg",
-    "src/assets/backgrounds/2.jpg",
-    "src/assets/backgrounds/3.jpg",
-    "src/assets/backgrounds/4.jpg",
-    "src/assets/backgrounds/5.jpg",
-    "src/assets/backgrounds/6.jpg",
-    "src/assets/backgrounds/7.jpg",
-    "src/assets/backgrounds/8.jpg",
-    "src/assets/backgrounds/9.jpg",
-    "src/assets/backgrounds/10.jpg",
-    "src/assets/backgrounds/11.jpg",
-    "src/assets/backgrounds/12.jpg",
-    "src/assets/backgrounds/13.jpg",
-    "src/assets/backgrounds/14.jpg",
-    "src/assets/backgrounds/15.jpg",
-    "src/assets/backgrounds/16.jpg",
-    "src/assets/backgrounds/17.jpg",
-    "src/assets/backgrounds/18.jpg",
-    "src/assets/backgrounds/19.jpg",
-    "src/assets/backgrounds/20.jpg",
-    "src/assets/backgrounds/21.jpg",
-    "src/assets/backgrounds/22.jpg",
-    "src/assets/backgrounds/23.jpg",
-    "src/assets/backgrounds/24.jpg",
-]
+export const backgrounds = Object.values(
+  import.meta.glob("./*.jpg", {
+    eager: true,
+    import: "default",
+  }),
+) as string[];
