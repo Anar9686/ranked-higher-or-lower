@@ -4,7 +4,7 @@ import { Coffee } from "lucide-react";
 function BuyMeCoffee() {
   return (
     <motion.a
-      href="https://www.buymeacoffee.com"
+      href="https://ko-fi.com/S1Y122Z38U"
       target="_blank"
       rel="noopener noreferrer"
       whileHover={{ scale: 1.06 }}
