@@ -3,11 +3,12 @@ import MainPage from "./pages/MainPage";
 import Header from "./components/Header";
 import { AnimatePresence, motion } from "motion/react";
 import LandingDialog from "./components/LandingDialog";
-import { ContactButton, ContactDialog } from "./components/ContactMe";
+import { ContactDialog } from "./components/ContactMe";
 import { CONSTANTS } from "./constants";
 import GameOverDialog from "./components/GameOverDialog";
 // import { SupportButton, SupportDialog } from "./components/SupportMe";
 import BuyMeCoffee from "./components/BuyMeCoffee";
+import OptionsMenu from "./components/OptionsMenu";
 
 export default function App() {
   const [gameId, setGameId] = useState(0);
@@ -15,6 +16,7 @@ export default function App() {
   const [gameOver, setGameOver] = useState(false);
   const [showLoss, setShowLoss] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   // const [showSupport, setShowSupport] = useState(false);
   const [showLanding, setShowLanding] = useState(() => {
     const seen = sessionStorage.getItem(CONSTANTS.LANDING_SEEN);
@@ -86,7 +88,18 @@ export default function App() {
       </AnimatePresence> */}
 
       {/* <SupportButton onClick={() => setShowSupport(true)} /> */}
-      <ContactButton onClick={() => setShowContact(true)} />
+
+      <OptionsMenu
+        open={menuOpen}
+        onToggle={() => setMenuOpen((o) => !o)}
+        onContact={() => {
+          setMenuOpen(false);
+          setShowContact(true);
+        }}
+        onSettings={() => {
+          setMenuOpen(false);
+        }}
+      />
       <BuyMeCoffee />
 
       <AnimatePresence>
