@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import GamePane from "../components/GamePane";
 import VsDivider from "../components/VsDivider";
 import { animate, motion, useMotionValue } from "motion/react";
-import { getLeaderboard } from "../api/api";
+import { getLeaderboard, getRunnerDetails } from "../api/api";
 import type { PaneDetails, RunnerData } from "../types";
-import { getPaneDetails } from "../helpers";
+import { getPaneAssets } from "../helpers";
 import { CONSTANTS } from "../constants";
 
 function MainPage({
@@ -22,7 +22,8 @@ function MainPage({
   ]);
 
   const trackX = useMotionValue(0);
-  const detailCache = useRef<Record<string, PaneDetails>>({});
+  const detailCache = useRef<Map<string, PaneDetails>>(new Map());
+  const pendingCache = useRef<Map<string, Promise<PaneDetails>>>(new Map());
 
   useEffect(() => {
     getLeaderboard().then((data) => {
@@ -44,45 +45,65 @@ function MainPage({
 
   const list = gameList ?? [];
 
+  // Caching next 2 pane details (only viable for small games)
   useEffect(() => {
     if (!list.length) return;
 
-    // Loop around if you reach the end
-    const indices = [step, step + 1, step + 2, step + 3].map(
-      (index) => index % list.length,
-    );
+    const indices = [
+      ...new Set(
+        [step, step + 1, step + 2, step + 3].map((i) => i % list.length),
+      ),
+    ];
 
     setPaneDetails((current) =>
       indices.slice(0, 3).map((index, offset) => {
-        const uuid = list[index]["uuid"];
-        return detailCache.current[uuid] ?? current[offset] ?? null;
+        const uuid = list[index].uuid;
+        return detailCache.current.get(uuid) ?? current[offset] ?? null;
       }),
     );
 
-    const missingIndices = indices.filter((index) => {
-      const uuid = list[index]["uuid"];
-      return !detailCache.current[uuid];
-    });
-
-    if (!missingIndices.length) return;
-
     let cancelled = false;
 
-    Promise.all(
-      missingIndices.map((index) => {
-        const uuid = list[index]["uuid"];
-        return getPaneDetails(uuid).then((paneDetails) => {
-          detailCache.current[uuid] = paneDetails;
-          return { index, paneDetails };
-        });
-      }),
-    ).then(() => {
-      if (cancelled) return;
+    indices.forEach((index) => {
+      const uuid = list[index].uuid;
+      if (detailCache.current.has(uuid) || pendingCache.current.has(uuid))
+        return;
 
+      const { avatar, background } = getPaneAssets(uuid);
+      // Preload the background image and keep it loaded until the pane is ready
+      const preload = new Image();
+      preload.src = background;
+      preload.onload = preload.onerror = () => {};
+
+      const promise: Promise<PaneDetails> = getRunnerDetails(uuid)
+        .then((details) => {
+          const paneDetails: PaneDetails = { avatar, background, details };
+          detailCache.current.set(uuid, paneDetails);
+          return paneDetails;
+        })
+        .catch((err) => {
+          console.error(`Failed to load details for ${uuid}`, err);
+          throw err;
+        })
+        .finally(() => {
+          pendingCache.current.delete(uuid);
+        });
+
+      pendingCache.current.set(uuid, promise);
+    });
+
+    const visibleIndices = indices.slice(0, 3);
+
+    const visiblePromises = visibleIndices
+      .map((i) => pendingCache.current.get(list[i].uuid))
+      .filter((p): p is Promise<PaneDetails> => p !== undefined);
+
+    Promise.allSettled(visiblePromises).then(() => {
+      if (cancelled) return;
       setPaneDetails((current) =>
-        [step, step + 1, step + 2].map((index, offset) => {
-          const uuid = list[index % list.length]["uuid"];
-          return detailCache.current[uuid] ?? current[offset] ?? null;
+        visibleIndices.map((index, offset) => {
+          const uuid = list[index].uuid;
+          return detailCache.current.get(uuid) ?? current[offset] ?? null;
         }),
       );
     });

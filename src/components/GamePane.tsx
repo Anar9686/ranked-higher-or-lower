@@ -46,13 +46,12 @@ function GamePane({
       onMouseEnter={() => canInteract && setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <motion.div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{
-          backgroundImage: `url(${paneDetails?.background})`,
-        }}
+      <motion.img
+        src={paneDetails?.background}
+        className="absolute inset-0 w-full h-full object-cover"
         animate={{ scale: activeHover ? 1.06 : 1 }}
         transition={{ duration: 0.55, ease: [0.32, 0, 0.08, 1] }}
+        alt=""
       />
 
       <motion.img
@@ -90,16 +89,12 @@ function GamePane({
         >
           Personal Best:{" "}
           <span className="font-bold text-white text-[16px]">
-            {paneDetails?.details
-              ? runnerPB(paneDetails.details)
-              : ""}
+            {paneDetails?.details ? runnerPB(paneDetails.details) : ""}
           </span>
           <br />
           Total Playtime:{" "}
           <span className="font-bold text-white text-[16px]">
-            {paneDetails?.details
-              ? runnerPlaytime(paneDetails.details)
-              : ""}
+            {paneDetails?.details ? runnerPlaytime(paneDetails.details) : ""}
           </span>
         </motion.span>
       </div>
@@ -132,15 +127,10 @@ function GamePane({
                 fontSize: "clamp(2.5rem, 5vw, 4.5rem)",
               }}
             >
-              #
-              {paneDetails?.details
-                ? paneDetails.details["eloRank"]
-                : ""}
+              #{paneDetails?.details ? paneDetails.details["eloRank"] : ""}
               <br />
               <span className="text-white">
-                {paneDetails?.details
-                  ? paneDetails.details["eloRate"]
-                  : ""}
+                {paneDetails?.details ? paneDetails.details["eloRate"] : ""}
               </span>
             </motion.div>
           ) : (

@@ -1,7 +1,7 @@
-import { getRunnerAvatar, getRunnerDetails } from "./api/api";
+import { getRunnerAvatar } from "./api/api";
 import { backgrounds } from "./assets/backgrounds/index";
 import type { RunnerDetails } from "./types";
-import { emptyPlayedList, playedList } from "./pages/MainPage";
+import { playedList } from "./pages/MainPage";
 
 export function runnerPB(details: RunnerDetails): string | undefined {
   return (
@@ -25,21 +25,24 @@ export function runnerPlaytime(details: RunnerDetails): string | undefined {
     .concat("h");
 }
 
-export async function getPaneDetails(uuid: string) {
-  const details = await getRunnerDetails(uuid);
-  const avatar = getRunnerAvatar(uuid);
-  const background = backgrounds[uuid.charCodeAt(0) % backgrounds.length];
-  return { details, avatar, background };
+export function getPaneAssets(uuid: string) {
+  return {
+    avatar: getRunnerAvatar(uuid),
+    background: backgrounds[uuid.charCodeAt(0) % backgrounds.length],
+  };
 }
 
-export function generateShareString(score: number) {
-  let shareString = `🏆 I scored ${score} on Higher or Lower! 🎮\n`;
-  playedList.forEach((runner, index) => {
-    if (index == 0) shareString += "👉 ";
-    if (index == score + 1) shareString += "💀 ";
-    shareString += `#${runner.eloRank} ${runner.nickname}\n`;
-  });
+export function generateShareString(score: number, full: boolean) {
+  let shareString = `🏆 I scored ${score} on Higher or Lower | MCSR Ranked! 🎮\n`;
+  if (full) {
+    playedList.forEach((runner, index) => {
+      if (index == 0) shareString += "👉 ";
+      if (index == score + 1) shareString += "💀 ";
+      shareString += `#${runner.eloRank} ${runner.nickname}\n`;
+    });
+  } else {
+    shareString += `💀 #${playedList[score].eloRank} ${playedList[score].nickname} #${playedList[score + 1].eloRank} ${playedList[score + 1].nickname}\n`;
+  }
   shareString += `Play on: ${window.location.href}`;
-  emptyPlayedList();
   return shareString;
 }
